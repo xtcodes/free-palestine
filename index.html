@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Twibbon Free Palestine</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background: #111;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    #frame-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: auto;
+    }
+
+    #canvas {
+      width: 100%;
+      height: auto;
+      border: 2px solid #fff;
+      background: #333;
+      touch-action: none;
+    }
+
+    input[type="file"] {
+      margin: 1rem 0;
+    }
+
+    .btn {
+      background: #f00;
+      border: none;
+      color: white;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 5px;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+
+    #watermark {
+      display: none;
+    }
+
+    footer {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <h1>Free Palestine Twibbon</h1>
+  <input type="file" accept="image/*" id="upload" />
+  <div id="frame-container">
+    <canvas id="canvas" width="1080" height="1080"></canvas>
+  </div>
+  <button class="btn" id="downloadBtn">Unduh Hasil</button>
+
+  <!-- Watermark Twibbon -->
+  <img id="watermark" src="twibbon1.png" crossorigin="anonymous" />
+
+  <footer>
+    Solidaritas untuk Palestina • Made with ❤️
+  </footer>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const upload = document.getElementById('upload');
+    const watermark = document.getElementById('watermark');
+
+    let img = new Image();
+    let scale = 1, offsetX = 0, offsetY = 0;
+    let isDragging = false, startX, startY;
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (img.src) {
+        const iw = img.width * scale;
+        const ih = img.height * scale;
+        ctx.drawImage(img, offsetX, offsetY, iw, ih);
+      }
+      ctx.drawImage(watermark, 0, 0, canvas.width, canvas.height);
+    }
+
+    upload.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        img.onload = () => {
+          scale = 1;
+          offsetX = (canvas.width - img.width) / 2;
+          offsetY = (canvas.height - img.height) / 2;
+          draw();
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    canvas.addEventListener('mousedown', e => {
+      isDragging = true;
+      startX = e.offsetX - offsetX;
+      startY = e.offsetY - offsetY;
+    });
+
+    canvas.addEventListener('mousemove', e => {
+      if (isDragging) {
+        offsetX = e.offsetX - startX;
+        offsetY = e.offsetY - startY;
+        draw();
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => isDragging = false);
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      scale += delta;
+      scale = Math.min(Math.max(0.2, scale), 3);
+      draw();
+    });
+
+    canvas.addEventListener('touchstart', e => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        const rect = canvas.getBoundingClientRect();
+        startX = e.touches[0].clientX - rect.left - offsetX;
+        startY = e.touches[0].clientY - rect.top - offsetY;
+      }
+    });
+
+    canvas.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      if (e.touches.length === 1 && isDragging) {
+        offsetX = e.touches[0].clientX - rect.left - startX;
+        offsetY = e.touches[0].clientY - rect.top - startY;
+        draw();
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', () => isDragging = false);
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'twibbon-palestine.png';
+      a.click();
+    });
+  </script>
+</body>
+</html>

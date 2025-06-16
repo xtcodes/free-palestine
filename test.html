@@ -24,15 +24,21 @@
       display: none;
     }
 
-    .btn {
+    .btn, .file {
       background: red;
       color: white;
+      font-size: 16px;
       padding: 0.6rem 1.2rem;
       border: none;
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
       margin: 0.5rem;
+    }
+
+    .file {
+      background: #f1f1f1;
+      color: #333;
     }
 
     #alert {
@@ -68,7 +74,7 @@
   <p><canvas id="canvas" width="1080" height="1080"></canvas></p>
   
   <p>
-    <label class="btn" id="btnUploadLabel">Unggah Gambar</label>
+    <label class="file" id="btnUploadLabel">Unggah Gambar</label>
     <button class="btn" id="btnUnduh">Unduh Hasil</button>
     <button class="btn" id="btnReset">Mulai dari Awal</button>
   </p>

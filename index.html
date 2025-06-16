@@ -1,47 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
   <title>Twibbon Free Palestine</title>
   <style>
     body {
-      width: 600px;
       background: #111;
       font-family: sans-serif;
       color: white;
       text-align: center;
-      margin: 5rem auto;
-      padding: 2rem;
+      padding: 1rem;
     }
 
     canvas {
       touch-action: none;
       border: 2px solid white;
       background: #000;
-      width: 100%;
+      max-width: 100%;
     }
 
     input[type="file"] {
       margin: 1rem;
-      display: none;
     }
 
     .btn {
       background: red;
       color: white;
-      display: inline-block;
-      font-size: 16px;
       padding: 0.6rem 1.2rem;
       border: none;
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
-    }
-
-    .file {
-      background: #f1f1f1;
-      color: #333;
     }
 
     #alert {
@@ -51,7 +41,7 @@
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0,0,0,0.8);
-      color: red;
+      color: white;
       padding: 1rem 1.5rem;
       border-radius: 10px;
       font-weight: bold;
@@ -63,26 +53,18 @@
       color: #aaa;
       font-size: 0.85rem;
     }
-
-    @media (max-width: 700px) {
-      body {
-          margin: 0 auto;
-          width: auto;
-        }
-    }
   </style>
 </head>
 <body>
   <h2>Twibbon Free Palestine</h2>
-  
-  <p><canvas id="canvas" width="1024" height="1024"></canvas></p>
-  <p>
-  <label class="btn file">Pilih Gambar
   <input type="file" id="upload" accept="image/*" />
-  </label>
+  <br>
+  <canvas id="canvas" width="1080" height="1080"></canvas>
+  <br>
   <button class="btn" id="downloadBtn">Unduh Hasil</button>
-  </p>
-  <div id="alert">⚠️ Silakan unggah gambar terlebih dahulu.</div>
+
+  <div id="alert">Silakan unggah gambar terlebih dahulu.</div>
+
   <footer>
     Solidaritas untuk Palestina • Made with ❤️
   </footer>
@@ -98,12 +80,11 @@
     let touchDistance = 0;
 
     const twibbon = new Image();
-    twibbon.src = "frame.png"; // ← ganti sesuai file kamu
+    twibbon.src = "twibbon1-transparan.png"; // Twibbon dengan tengah transparan
 
-    function drawAll() {
+    function drawAll(showTextWatermark = false) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Gambar pengguna (terpotong lingkaran)
       if (userImg.src && userImg.complete) {
         ctx.save();
         ctx.beginPath();
@@ -115,11 +96,19 @@
         ctx.restore();
       }
 
-      // Gambar Twibbon di atas
       if (twibbon.complete) {
         ctx.save();
         ctx.globalAlpha = transparency;
-        ctx.drawImage(twibbon, 0, 0, 1024, 1024);
+        ctx.drawImage(twibbon, 0, 0, 1080, 1080);
+        ctx.restore();
+      }
+
+      if (showTextWatermark) {
+        ctx.save();
+        ctx.fillStyle = "black";
+        ctx.font = "bold 32px sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText("#FreePalestine", 1060, 1060);
         ctx.restore();
       }
     }
@@ -140,7 +129,6 @@
       reader.readAsDataURL(file);
     });
 
-    // Drag pakai mouse
     canvas.addEventListener("mousedown", e => {
       dragging = true;
       startX = e.offsetX - offsetX;
@@ -163,7 +151,6 @@
       drawAll();
     });
 
-    // Zoom dengan scroll
     canvas.addEventListener("wheel", e => {
       e.preventDefault();
       transparency = 0.5;
@@ -176,7 +163,6 @@
       }, 300);
     });
 
-    // Sentuh 1 jari geser, 2 jari zoom
     canvas.addEventListener("touchstart", e => {
       if (e.touches.length === 1) {
         dragging = true;
@@ -221,7 +207,6 @@
       return Math.sqrt(dx * dx + dy * dy);
     }
 
-    // Tombol Unduh dengan Validasi
     document.getElementById("downloadBtn").addEventListener("click", () => {
       if (!userImg.src || userImg.src === window.location.href) {
         showAlert();
@@ -229,11 +214,16 @@
       }
 
       transparency = 1;
-      drawAll();
-      const a = document.createElement("a");
-      a.href = canvas.toDataURL("image/png");
-      a.download = "twibbon-palestine.png";
-      a.click();
+      drawAll(true); // tambahkan watermark teks
+      setTimeout(() => {
+        const a = document.createElement("a");
+        a.href = canvas.toDataURL("image/png");
+        a.download = "twibbon-palestine.png";
+        a.click();
+
+        // Gambar ulang tanpa watermark
+        drawAll(false);
+      }, 200);
     });
 
     function showAlert() {
@@ -244,7 +234,7 @@
       }, 2500);
     }
 
-    twibbon.onload = drawAll;
+    twibbon.onload = () => drawAll(false);
   </script>
 </body>
 </html>

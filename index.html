@@ -6,159 +6,156 @@
   <title>Twibbon Free Palestine</title>
   <style>
     body {
-      background: #111;
       font-family: sans-serif;
+      margin: 0;
+      background: #111;
       color: white;
       text-align: center;
       padding: 1rem;
     }
 
-    canvas {
+    #frame-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: auto;
+    }
+
+    #canvas {
       width: 100%;
-      background: transparent;
+      height: auto;
+      border: 2px solid #fff;
+      background: #333;
       touch-action: none;
-      border: 2px solid white;
     }
 
     input[type="file"] {
-      margin: 1rem;
+      margin: 1rem 0;
     }
 
     .btn {
-      background: red;
-      color: white;
-      padding: 0.6rem 1.2rem;
+      background: #f00;
       border: none;
-      font-weight: bold;
-      border-radius: 6px;
+      color: white;
+      padding: 0.5rem 1rem;
       cursor: pointer;
+      border-radius: 5px;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+
+    #watermark {
+      display: none;
     }
 
     footer {
       margin-top: 2rem;
+      font-size: 0.9rem;
       color: #aaa;
-      font-size: 0.85rem;
     }
   </style>
 </head>
 <body>
-  <h2>Twibbon Free Palestine</h2>
-  <input type="file" id="upload" accept="image/*" />
-  <br>
-  <canvas id="canvas" width="1080" height="1080"></canvas>
-  <br>
+  <h1>Free Palestine Twibbon</h1>
+  <input type="file" accept="image/*" id="upload" />
+  <div id="frame-container">
+    <canvas id="canvas" width="1080" height="1080"></canvas>
+  </div>
   <button class="btn" id="downloadBtn">Unduh Hasil</button>
+
+  <!-- Watermark Twibbon -->
+  <img id="watermark" src="twibbon1.png" crossorigin="anonymous" />
+
   <footer>
     Solidaritas untuk Palestina • Made with ❤️
   </footer>
 
   <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const upload = document.getElementById("upload");
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const upload = document.getElementById('upload');
+    const watermark = document.getElementById('watermark');
 
-    let userImg = new Image();
+    let img = new Image();
     let scale = 1, offsetX = 0, offsetY = 0;
-    let dragging = false, startX, startY;
+    let isDragging = false, startX, startY;
 
-    function drawFrame() {
-      // Buat latar putih dan garis bendera
+    function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#fff";
-      ctx.beginPath();
-      ctx.arc(540, 540, 520, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Lubang transparan
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.beginPath();
-      ctx.arc(540, 540, 360, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalCompositeOperation = "source-over";
-
-      // Garis bendera
-      const radius = 460;
-      const angles = [[-0.4, -0.2, "red"], [-0.2, 0, "white"], [0, 0.2, "green"], [0.2, 0.4, "black"]];
-      angles.forEach(([start, end, color]) => {
-        ctx.beginPath();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 20;
-        ctx.arc(540, 540, radius, Math.PI * start, Math.PI * end);
-        ctx.stroke();
-      });
-
-      // Teks atas dan bawah
-      ctx.fillStyle = "black";
-      ctx.font = "bold 60px sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("FREE PALESTINE", 540, 160);
-      ctx.fillText("STAND WITH GAZA", 540, 1000);
-    }
-
-    function drawAll() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Gambar pengguna (di bawah)
-      if (userImg.src) {
-        const iw = userImg.width * scale;
-        const ih = userImg.height * scale;
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(540, 540, 360, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(userImg, offsetX, offsetY, iw, ih);
-        ctx.restore();
+      if (img.src) {
+        const iw = img.width * scale;
+        const ih = img.height * scale;
+        ctx.drawImage(img, offsetX, offsetY, iw, ih);
       }
-
-      drawFrame(); // Bingkai twibbon
+      ctx.drawImage(watermark, 0, 0, canvas.width, canvas.height);
     }
 
-    upload.addEventListener("change", e => {
+    upload.addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = () => {
-        userImg.onload = () => {
+        img.onload = () => {
           scale = 1;
-          offsetX = (canvas.width - userImg.width) / 2;
-          offsetY = (canvas.height - userImg.height) / 2;
-          drawAll();
+          offsetX = (canvas.width - img.width) / 2;
+          offsetY = (canvas.height - img.height) / 2;
+          draw();
         };
-        userImg.src = reader.result;
+        img.src = reader.result;
       };
       reader.readAsDataURL(file);
     });
 
-    canvas.addEventListener("mousedown", e => {
-      dragging = true;
+    canvas.addEventListener('mousedown', e => {
+      isDragging = true;
       startX = e.offsetX - offsetX;
       startY = e.offsetY - offsetY;
     });
 
-    canvas.addEventListener("mousemove", e => {
-      if (dragging) {
+    canvas.addEventListener('mousemove', e => {
+      if (isDragging) {
         offsetX = e.offsetX - startX;
         offsetY = e.offsetY - startY;
-        drawAll();
+        draw();
       }
     });
 
-    canvas.addEventListener("mouseup", () => dragging = false);
-    canvas.addEventListener("wheel", e => {
+    canvas.addEventListener('mouseup', () => isDragging = false);
+    canvas.addEventListener('wheel', e => {
       e.preventDefault();
-      scale += e.deltaY < 0 ? 0.05 : -0.05;
-      scale = Math.max(0.2, Math.min(scale, 3));
-      drawAll();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      scale += delta;
+      scale = Math.min(Math.max(0.2, scale), 3);
+      draw();
     });
 
-    document.getElementById("downloadBtn").addEventListener("click", () => {
-      const a = document.createElement("a");
-      a.href = canvas.toDataURL("image/png");
-      a.download = "twibbon-palestine.png";
+    canvas.addEventListener('touchstart', e => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        const rect = canvas.getBoundingClientRect();
+        startX = e.touches[0].clientX - rect.left - offsetX;
+        startY = e.touches[0].clientY - rect.top - offsetY;
+      }
+    });
+
+    canvas.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      if (e.touches.length === 1 && isDragging) {
+        offsetX = e.touches[0].clientX - rect.left - startX;
+        offsetY = e.touches[0].clientY - rect.top - startY;
+        draw();
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', () => isDragging = false);
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'twibbon-palestine.png';
       a.click();
     });
-
-    drawFrame(); // Awal
   </script>
 </body>
 </html>

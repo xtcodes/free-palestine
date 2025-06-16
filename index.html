@@ -29,11 +29,18 @@
     .btn {
       background: red;
       color: white;
+      display: inline-block;
+      font-size: 16px;
       padding: 0.6rem 1.2rem;
       border: none;
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
+    }
+
+    .file {
+      background: #f1f1f1;
+      color: #333;
     }
 
     #alert {
@@ -66,11 +73,14 @@
 </head>
 <body>
   <h2>Twibbon Free Palestine</h2>
-  <label class="btn file">Pilih Gambar
-  <input type="file" id="upload" accept="image/*" />
-  </label>
+
   <p><canvas id="canvas" width="1080" height="1080"></canvas></p>
-  <p><button class="btn" id="downloadBtn">Unduh Hasil</button></p>
+  <p>
+    <label class="btn file">Pilih Gambar
+      <input type="file" id="upload" accept="image/*" />
+    </label>
+    <button class="btn" id="downloadBtn">Unduh Hasil</button>
+  </p>
 
   <div id="alert">Silakan unggah gambar terlebih dahulu.</div>
 

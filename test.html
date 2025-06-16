@@ -6,11 +6,13 @@
   <title>Twibbon Free Palestine</title>
   <style>
     body {
+      width: 600px;
       background: #111;
       font-family: sans-serif;
       color: white;
       text-align: center;
-      padding: 1rem;
+      margin: 5rem auto;
+      padding: 2rem;
     }
 
     canvas {
@@ -39,6 +41,7 @@
     .file {
       background: #f1f1f1;
       color: #333;
+      margin: 0.5rem;
     }
 
     #alert {
@@ -63,6 +66,13 @@
 
     #btnUnduh, #btnReset {
       display: none;
+    }
+
+    @media (max-width: 700px) {
+      body {
+          margin: 0 auto;
+          width: auto;
+      }
     }
   </style>
 </head>

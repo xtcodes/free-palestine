@@ -1,264 +1,264 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-  <title>Twibbon Free Palestine</title>
-  <style>
-    body {
-      width: 600px;
-      background: #111;
-      font-family: sans-serif;
-      color: white;
-      text-align: center;
-      margin: 5rem auto;
-      padding: 2rem;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>Twibbon Free Palestine</title>
+<style>
+body {
+width: 600px;
+background: #111;
+font-family: sans-serif;
+color: white;
+text-align: center;
+margin: 5rem auto;
+padding: 2rem;
+}
 
-    canvas {
-      touch-action: none;
-      border: 2px solid white;
-      background: #000;
-      max-width: 100%;
-    }
+canvas {
+touch-action: none;
+border: 2px solid white;
+background: #000;
+max-width: 100%;
+}
 
-    input[type="file"] {
-      display: none;
-      margin: 1rem;
-    }
+input[type="file"] {
+display: none;
+margin: 1rem;
+}
 
-    .btn {
-      background: red;
-      color: white;
-      display: inline-block;
-      font-size: 16px;
-      padding: 0.6rem 1.2rem;
-      border: none;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+.btn {
+background: red;
+color: white;
+display: inline-block;
+font-size: 16px;
+padding: 0.6rem 1.2rem;
+border: none;
+font-weight: bold;
+border-radius: 6px;
+cursor: pointer;
+}
 
-    .file {
-      background: #f1f1f1;
-      color: #333;
-    }
+.file {
+background: #f1f1f1;
+color: #333;
+}
 
-    #alert {
-      display: none;
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.8);
-      color: white;
-      padding: 0.6rem 1.2rem;
-      border-radius: 10px;
-      font-weight: bold;
-      z-index: 999;
-    }
+#alert {
+display: none;
+position: fixed;
+top: 20px;
+left: 50%;
+transform: translateX(-50%);
+background: rgba(0,0,0,0.8);
+color: white;
+padding: 0.6rem 1.2rem;
+border-radius: 10px;
+font-weight: bold;
+z-index: 999;
+}
 
-    footer {
-      margin-top: 2rem;
-      color: #aaa;
-      font-size: 0.85rem;
-    }
+footer {
+margin-top: 2rem;
+color: #aaa;
+font-size: 0.85rem;
+}
 
-    @media (max-width: 700px) {
-      body {
-          margin: 0 auto;
-          width: auto;
-        }
-    }
-  </style>
+@media (max-width: 700px) {
+body {
+margin: 0 auto;
+width: auto;
+}
+}
+</style>
 </head>
 <body>
-  <h2>Twibbon Free Palestine</h2>
-  <p>Tunjukkan dukungan Anda kepada Palestina dengan mengubah gambar profil Anda.</p>
-  <p><canvas id="canvas" width="1080" height="1080"></canvas></p>
-  <p>
-    <label class="btn file">Pilih Gambar
-      <input type="file" id="upload" accept="image/*" />
-    </label>
-    <button class="btn" id="downloadBtn">Unduh Hasil</button>
-  </p>
+<h2>Twibbon Free Palestine</h2>
+<p>Tunjukkan dukungan Anda kepada Palestina dengan mengubah gambar profil Anda.</p>
+<p><canvas id="canvas" width="1080" height="1080"></canvas></p>
+<p>
+<label class="btn file">Pilih Gambar
+<input type="file" id="upload" accept="image/*" />
+</label>
+<button class="btn" id="downloadBtn">Unduh Hasil</button>
+</p>
 
-  <div id="alert">Silakan unggah gambar terlebih dahulu.</div>
+<div id="alert">Silakan unggah gambar terlebih dahulu.</div>
 
-  <footer>
-    Solidaritas untuk Palestina • Made with ❤️
-  </footer>
+<footer>
+Solidaritas untuk Palestina • Made with ❤️
+</footer>
 
-  <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const upload = document.getElementById("upload");
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const upload = document.getElementById("upload");
 
-    const hiddenCanvas = document.createElement("canvas");
-    hiddenCanvas.width = 1080;
-    hiddenCanvas.height = 1080;
-    const hiddenCtx = hiddenCanvas.getContext("2d");
+const hiddenCanvas = document.createElement("canvas");
+hiddenCanvas.width = 1080;
+hiddenCanvas.height = 1080;
+const hiddenCtx = hiddenCanvas.getContext("2d");
 
-    let userImg = new Image();
-    let scale = 1, offsetX = 0, offsetY = 0;
-    let dragging = false, startX, startY, transparency = 1;
-    let touchDistance = 0;
+let userImg = new Image();
+let scale = 1, offsetX = 0, offsetY = 0;
+let dragging = false, startX, startY, transparency = 1;
+let touchDistance = 0;
 
-    const twibbon = new Image();
-    twibbon.src = "frame.png";
+const twibbon = new Image();
+twibbon.src = "frame.png";
 
-    function drawAll(targetCtx, showWatermark = false) {
-      targetCtx.clearRect(0, 0, 1080, 1080);
+function drawAll(targetCtx, showWatermark = false) {
+targetCtx.clearRect(0, 0, 1080, 1080);
 
-      if (userImg.src && userImg.complete) {
-        targetCtx.save();
-        targetCtx.beginPath();
-        targetCtx.arc(540, 540, 360, 0, Math.PI * 2);
-        targetCtx.clip();
-        const iw = userImg.width * scale;
-        const ih = userImg.height * scale;
-        targetCtx.drawImage(userImg, offsetX, offsetY, iw, ih);
-        targetCtx.restore();
-      }
+if (userImg.src && userImg.complete) {
+targetCtx.save();
+targetCtx.beginPath();
+targetCtx.arc(540, 540, 360, 0, Math.PI * 2);
+targetCtx.clip();
+const iw = userImg.width * scale;
+const ih = userImg.height * scale;
+targetCtx.drawImage(userImg, offsetX, offsetY, iw, ih);
+targetCtx.restore();
+}
 
-      if (twibbon.complete) {
-        targetCtx.save();
-        targetCtx.globalAlpha = transparency;
-        targetCtx.drawImage(twibbon, 0, 0, 1080, 1080);
-        targetCtx.restore();
-      }
+if (twibbon.complete) {
+targetCtx.save();
+targetCtx.globalAlpha = transparency;
+targetCtx.drawImage(twibbon, 0, 0, 1080, 1080);
+targetCtx.restore();
+}
 
-      if (showWatermark) {
-        targetCtx.save();
-        targetCtx.fillStyle = "black";
-        targetCtx.font = "bold 32px sans-serif";
-        targetCtx.textAlign = "right";
-        targetCtx.fillText("Dibuat oleh Ferry Ayunda", 1060, 1060);
-        targetCtx.restore();
-      }
-    }
+if (showWatermark) {
+targetCtx.save();
+targetCtx.fillStyle = "black";
+targetCtx.font = "bold 32px sans-serif";
+targetCtx.textAlign = "right";
+targetCtx.fillText("Dibuat oleh Ferry Ayunda", 1060, 1060);
+targetCtx.restore();
+}
+}
 
-    function redrawVisibleCanvas() {
-      drawAll(ctx, false);
-    }
+function redrawVisibleCanvas() {
+drawAll(ctx, false);
+}
 
-    upload.addEventListener("change", e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        userImg.onload = () => {
-          scale = 1;
-          offsetX = (canvas.width - userImg.width) / 2;
-          offsetY = (canvas.height - userImg.height) / 2;
-          redrawVisibleCanvas();
-        };
-        userImg.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    });
+upload.addEventListener("change", e => {
+const file = e.target.files[0];
+if (!file) return;
+const reader = new FileReader();
+reader.onload = () => {
+userImg.onload = () => {
+scale = 1;
+offsetX = (canvas.width - userImg.width) / 2;
+offsetY = (canvas.height - userImg.height) / 2;
+redrawVisibleCanvas();
+};
+userImg.src = reader.result;
+};
+reader.readAsDataURL(file);
+});
 
-    canvas.addEventListener("mousedown", e => {
-      dragging = true;
-      startX = e.offsetX - offsetX;
-      startY = e.offsetY - offsetY;
-      transparency = 0.5;
-      redrawVisibleCanvas();
-    });
+canvas.addEventListener("mousedown", e => {
+dragging = true;
+startX = e.offsetX - offsetX;
+startY = e.offsetY - offsetY;
+transparency = 0.5;
+redrawVisibleCanvas();
+});
 
-    canvas.addEventListener("mousemove", e => {
-      if (dragging) {
-        offsetX = e.offsetX - startX;
-        offsetY = e.offsetY - startY;
-        redrawVisibleCanvas();
-      }
-    });
+canvas.addEventListener("mousemove", e => {
+if (dragging) {
+offsetX = e.offsetX - startX;
+offsetY = e.offsetY - startY;
+redrawVisibleCanvas();
+}
+});
 
-    canvas.addEventListener("mouseup", () => {
-      dragging = false;
-      transparency = 1;
-      redrawVisibleCanvas();
-    });
+canvas.addEventListener("mouseup", () => {
+dragging = false;
+transparency = 1;
+redrawVisibleCanvas();
+});
 
-    canvas.addEventListener("wheel", e => {
-      e.preventDefault();
-      transparency = 0.5;
-      scale += e.deltaY < 0 ? 0.05 : -0.05;
-      scale = Math.max(0.2, Math.min(scale, 3));
-      redrawVisibleCanvas();
-      setTimeout(() => {
-        transparency = 1;
-        redrawVisibleCanvas();
-      }, 300);
-    });
+canvas.addEventListener("wheel", e => {
+e.preventDefault();
+transparency = 0.5;
+scale += e.deltaY < 0 ? 0.05 : -0.05;
+scale = Math.max(0.2, Math.min(scale, 3));
+redrawVisibleCanvas();
+setTimeout(() => {
+transparency = 1;
+redrawVisibleCanvas();
+}, 300);
+});
 
-    canvas.addEventListener("touchstart", e => {
-      if (e.touches.length === 1) {
-        dragging = true;
-        const rect = canvas.getBoundingClientRect();
-        startX = e.touches[0].clientX - rect.left - offsetX;
-        startY = e.touches[0].clientY - rect.top - offsetY;
-        transparency = 0.5;
-      }
-      if (e.touches.length === 2) {
-        touchDistance = getDistance(e.touches);
-        transparency = 0.5;
-      }
-    });
+canvas.addEventListener("touchstart", e => {
+if (e.touches.length === 1) {
+dragging = true;
+const rect = canvas.getBoundingClientRect();
+startX = e.touches[0].clientX - rect.left - offsetX;
+startY = e.touches[0].clientY - rect.top - offsetY;
+transparency = 0.5;
+}
+if (e.touches.length === 2) {
+touchDistance = getDistance(e.touches);
+transparency = 0.5;
+}
+});
 
-    canvas.addEventListener("touchmove", e => {
-      e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      if (e.touches.length === 1 && dragging) {
-        offsetX = e.touches[0].clientX - rect.left - startX;
-        offsetY = e.touches[0].clientY - rect.top - startY;
-        redrawVisibleCanvas();
-      }
-      if (e.touches.length === 2) {
-        const newDist = getDistance(e.touches);
-        const zoomFactor = newDist / touchDistance;
-        scale *= zoomFactor;
-        scale = Math.max(0.2, Math.min(scale, 3));
-        touchDistance = newDist;
-        redrawVisibleCanvas();
-      }
-    }, { passive: false });
+canvas.addEventListener("touchmove", e => {
+e.preventDefault();
+const rect = canvas.getBoundingClientRect();
+if (e.touches.length === 1 && dragging) {
+offsetX = e.touches[0].clientX - rect.left - startX;
+offsetY = e.touches[0].clientY - rect.top - startY;
+redrawVisibleCanvas();
+}
+if (e.touches.length === 2) {
+const newDist = getDistance(e.touches);
+const zoomFactor = newDist / touchDistance;
+scale *= zoomFactor;
+scale = Math.max(0.2, Math.min(scale, 3));
+touchDistance = newDist;
+redrawVisibleCanvas();
+}
+}, { passive: false });
 
-    canvas.addEventListener("touchend", () => {
-      dragging = false;
-      transparency = 1;
-      redrawVisibleCanvas();
-    });
+canvas.addEventListener("touchend", () => {
+dragging = false;
+transparency = 1;
+redrawVisibleCanvas();
+});
 
-    function getDistance(touches) {
-      const dx = touches[0].clientX - touches[1].clientX;
-      const dy = touches[0].clientY - touches[1].clientY;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
+function getDistance(touches) {
+const dx = touches[0].clientX - touches[1].clientX;
+const dy = touches[0].clientY - touches[1].clientY;
+return Math.sqrt(dx * dx + dy * dy);
+}
 
-    document.getElementById("downloadBtn").addEventListener("click", () => {
-      if (!userImg.src || userImg.src === window.location.href) {
-        showAlert();
-        return;
-      }
+document.getElementById("downloadBtn").addEventListener("click", () => {
+if (!userImg.src || userImg.src === window.location.href) {
+showAlert();
+return;
+}
 
-      // Buat hasil final di canvas tak terlihat
-      drawAll(hiddenCtx, true);
-      const a = document.createElement("a");
-      a.href = hiddenCanvas.toDataURL("image/png");
-      a.download = "twibbon-palestine.png";
-      a.click();
-    });
+// Buat hasil final di canvas tak terlihat
+drawAll(hiddenCtx, true);
+const a = document.createElement("a");
+a.href = hiddenCanvas.toDataURL("image/png");
+a.download = "twibbon-palestine.png";
+a.click();
+});
 
-    function showAlert() {
-      const alert = document.getElementById("alert");
-      alert.style.display = "block";
-      setTimeout(() => {
-        alert.style.display = "none";
-      }, 2500);
-    }
+function showAlert() {
+const alert = document.getElementById("alert");
+alert.style.display = "block";
+setTimeout(() => {
+alert.style.display = "none";
+}, 2500);
+}
 
-    twibbon.onload = () => redrawVisibleCanvas();
-  </script>
+twibbon.onload = () => redrawVisibleCanvas();
+</script>
 </body>
 </html>

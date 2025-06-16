@@ -2,160 +2,200 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
   <title>Twibbon Free Palestine</title>
   <style>
     body {
-      font-family: sans-serif;
-      margin: 0;
       background: #111;
+      font-family: sans-serif;
       color: white;
       text-align: center;
       padding: 1rem;
     }
 
-    #frame-container {
-      position: relative;
-      width: 300px;
-      height: 300px;
-      margin: auto;
-    }
-
-    #canvas {
-      width: 100%;
-      height: auto;
-      border: 2px solid #fff;
-      background: #333;
+    canvas {
       touch-action: none;
+      border: 2px solid white;
+      background: #000;
+      max-width: 100%;
     }
 
     input[type="file"] {
-      margin: 1rem 0;
+      margin: 1rem;
     }
 
     .btn {
-      background: #f00;
-      border: none;
+      background: red;
       color: white;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      border-radius: 5px;
+      padding: 0.6rem 1.2rem;
+      border: none;
       font-weight: bold;
-      margin-top: 1rem;
-    }
-
-    #watermark {
-      display: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
 
     footer {
       margin-top: 2rem;
-      font-size: 0.9rem;
       color: #aaa;
+      font-size: 0.85rem;
     }
   </style>
 </head>
 <body>
-  <h1>Free Palestine Twibbon</h1>
-  <input type="file" accept="image/*" id="upload" />
-  <div id="frame-container">
-    <canvas id="canvas" width="1080" height="1080"></canvas>
-  </div>
+  <h2>Twibbon Free Palestine</h2>
+  <input type="file" id="upload" accept="image/*" />
+  <br>
+  <canvas id="canvas" width="1080" height="1080"></canvas>
+  <br>
   <button class="btn" id="downloadBtn">Unduh Hasil</button>
-
-  <!-- Watermark Twibbon -->
-  <img id="watermark" src="twibbon1.png" crossorigin="anonymous" />
-
   <footer>
     Solidaritas untuk Palestina • Made with ❤️
   </footer>
 
   <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const upload = document.getElementById('upload');
-    const watermark = document.getElementById('watermark');
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const upload = document.getElementById("upload");
 
-    let img = new Image();
+    let userImg = new Image();
     let scale = 1, offsetX = 0, offsetY = 0;
-    let isDragging = false, startX, startY;
+    let dragging = false, startX, startY, transparency = 1;
+    let touchDistance = 0;
 
-    function draw() {
+    const twibbon = new Image();
+    twibbon.src = "twibbon1-bg.png"; // ← pastikan file ini di folder yang sama
+
+    function drawAll() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (img.src) {
-        const iw = img.width * scale;
-        const ih = img.height * scale;
-        ctx.drawImage(img, offsetX, offsetY, iw, ih);
+
+      // Gambar pengguna (dalam lingkaran)
+      if (userImg.src) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(540, 540, 360, 0, Math.PI * 2);
+        ctx.clip();
+        const iw = userImg.width * scale;
+        const ih = userImg.height * scale;
+        ctx.drawImage(userImg, offsetX, offsetY, iw, ih);
+        ctx.restore();
       }
-      ctx.drawImage(watermark, 0, 0, canvas.width, canvas.height);
+
+      // Gambar Twibbon di atas
+      if (twibbon.complete) {
+        ctx.save();
+        ctx.globalAlpha = transparency;
+        ctx.drawImage(twibbon, 0, 0, 1080, 1080);
+        ctx.restore();
+      }
     }
 
-    upload.addEventListener('change', e => {
+    upload.addEventListener("change", e => {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = () => {
-        img.onload = () => {
+        userImg.onload = () => {
           scale = 1;
-          offsetX = (canvas.width - img.width) / 2;
-          offsetY = (canvas.height - img.height) / 2;
-          draw();
+          offsetX = (canvas.width - userImg.width) / 2;
+          offsetY = (canvas.height - userImg.height) / 2;
+          drawAll();
         };
-        img.src = reader.result;
+        userImg.src = reader.result;
       };
       reader.readAsDataURL(file);
     });
 
-    canvas.addEventListener('mousedown', e => {
-      isDragging = true;
+    // Drag pakai mouse
+    canvas.addEventListener("mousedown", e => {
+      dragging = true;
       startX = e.offsetX - offsetX;
       startY = e.offsetY - offsetY;
+      transparency = 0.5;
+      drawAll();
     });
 
-    canvas.addEventListener('mousemove', e => {
-      if (isDragging) {
+    canvas.addEventListener("mousemove", e => {
+      if (dragging) {
         offsetX = e.offsetX - startX;
         offsetY = e.offsetY - startY;
-        draw();
+        drawAll();
       }
     });
 
-    canvas.addEventListener('mouseup', () => isDragging = false);
-    canvas.addEventListener('wheel', e => {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      scale += delta;
-      scale = Math.min(Math.max(0.2, scale), 3);
-      draw();
+    canvas.addEventListener("mouseup", () => {
+      dragging = false;
+      transparency = 1;
+      drawAll();
     });
 
-    canvas.addEventListener('touchstart', e => {
+    // Scroll zoom desktop
+    canvas.addEventListener("wheel", e => {
+      e.preventDefault();
+      transparency = 0.5;
+      scale += e.deltaY < 0 ? 0.05 : -0.05;
+      scale = Math.max(0.2, Math.min(scale, 3));
+      drawAll();
+      setTimeout(() => {
+        transparency = 1;
+        drawAll();
+      }, 300);
+    });
+
+    // Sentuh 1 jari geser, 2 jari zoom
+    canvas.addEventListener("touchstart", e => {
       if (e.touches.length === 1) {
-        isDragging = true;
+        dragging = true;
         const rect = canvas.getBoundingClientRect();
         startX = e.touches[0].clientX - rect.left - offsetX;
         startY = e.touches[0].clientY - rect.top - offsetY;
+        transparency = 0.5;
+      }
+      if (e.touches.length === 2) {
+        touchDistance = getDistance(e.touches);
+        transparency = 0.5;
       }
     });
 
-    canvas.addEventListener('touchmove', e => {
+    canvas.addEventListener("touchmove", e => {
       e.preventDefault();
       const rect = canvas.getBoundingClientRect();
-      if (e.touches.length === 1 && isDragging) {
+      if (e.touches.length === 1 && dragging) {
         offsetX = e.touches[0].clientX - rect.left - startX;
         offsetY = e.touches[0].clientY - rect.top - startY;
-        draw();
+        drawAll();
+      }
+      if (e.touches.length === 2) {
+        const newDist = getDistance(e.touches);
+        const zoomFactor = newDist / touchDistance;
+        scale *= zoomFactor;
+        scale = Math.max(0.2, Math.min(scale, 3));
+        touchDistance = newDist;
+        drawAll();
       }
     }, { passive: false });
 
-    canvas.addEventListener('touchend', () => isDragging = false);
+    canvas.addEventListener("touchend", () => {
+      dragging = false;
+      transparency = 1;
+      drawAll();
+    });
 
-    document.getElementById('downloadBtn').addEventListener('click', () => {
-      const a = document.createElement('a');
-      a.href = canvas.toDataURL('image/png');
-      a.download = 'twibbon-palestine.png';
+    function getDistance(touches) {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      transparency = 1;
+      drawAll();
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = "twibbon-palestine.png";
       a.click();
     });
+
+    twibbon.onload = drawAll;
   </script>
 </body>
 </html>

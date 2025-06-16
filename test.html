@@ -83,7 +83,7 @@
   <p><canvas id="canvas" width="1080" height="1080"></canvas></p>
   
   <p>
-    <label class="file" id="btnUploadLabel">Unggah Gambar</label>
+    <button class="file" id="btnUploadLabel">Unggah Gambar</button>
     <input type="file" id="upload" accept="image/*" />
     <button class="btn" id="btnUnduh">Unduh Hasil</button>
     <button class="btn" id="btnReset">Mulai dari Awal</button>
@@ -288,6 +288,9 @@
     }
 
     twibbon.onload = () => redrawVisibleCanvas();
+  </script>
+  <script>
+    document.querySelector('button').addEventListener('click', () => { document.querySelector('input[type="file"]').click(); });
   </script>
 </body>
 </html>

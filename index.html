@@ -74,43 +74,52 @@
     const ctx = canvas.getContext("2d");
     const upload = document.getElementById("upload");
 
+    const hiddenCanvas = document.createElement("canvas");
+    hiddenCanvas.width = 1080;
+    hiddenCanvas.height = 1080;
+    const hiddenCtx = hiddenCanvas.getContext("2d");
+
     let userImg = new Image();
     let scale = 1, offsetX = 0, offsetY = 0;
     let dragging = false, startX, startY, transparency = 1;
     let touchDistance = 0;
 
     const twibbon = new Image();
-    twibbon.src = "frame.png"; // Twibbon dengan tengah transparan
+    twibbon.src = "twibbon1-transparan.png";
 
-    function drawAll(showTextWatermark = false) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function drawAll(targetCtx, showWatermark = false) {
+      targetCtx.clearRect(0, 0, 1080, 1080);
 
       if (userImg.src && userImg.complete) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(540, 540, 360, 0, Math.PI * 2);
-        ctx.clip();
+        targetCtx.save();
+        targetCtx.beginPath();
+        targetCtx.arc(540, 540, 360, 0, Math.PI * 2);
+        targetCtx.clip();
         const iw = userImg.width * scale;
         const ih = userImg.height * scale;
-        ctx.drawImage(userImg, offsetX, offsetY, iw, ih);
-        ctx.restore();
+        targetCtx.drawImage(userImg, offsetX, offsetY, iw, ih);
+        targetCtx.restore();
       }
 
       if (twibbon.complete) {
-        ctx.save();
-        ctx.globalAlpha = transparency;
-        ctx.drawImage(twibbon, 0, 0, 1080, 1080);
-        ctx.restore();
+        targetCtx.save();
+        targetCtx.globalAlpha = transparency;
+        targetCtx.drawImage(twibbon, 0, 0, 1080, 1080);
+        targetCtx.restore();
       }
 
-      if (showTextWatermark) {
-        ctx.save();
-        ctx.fillStyle = "black";
-        ctx.font = "bold 32px sans-serif";
-        ctx.textAlign = "right";
-        ctx.fillText("#FreePalestine", 1060, 1060);
-        ctx.restore();
+      if (showWatermark) {
+        targetCtx.save();
+        targetCtx.fillStyle = "black";
+        targetCtx.font = "bold 32px sans-serif";
+        targetCtx.textAlign = "right";
+        targetCtx.fillText("#FreePalestine", 1060, 1060);
+        targetCtx.restore();
       }
+    }
+
+    function redrawVisibleCanvas() {
+      drawAll(ctx, false);
     }
 
     upload.addEventListener("change", e => {
@@ -122,7 +131,7 @@
           scale = 1;
           offsetX = (canvas.width - userImg.width) / 2;
           offsetY = (canvas.height - userImg.height) / 2;
-          drawAll();
+          redrawVisibleCanvas();
         };
         userImg.src = reader.result;
       };
@@ -134,21 +143,21 @@
       startX = e.offsetX - offsetX;
       startY = e.offsetY - offsetY;
       transparency = 0.5;
-      drawAll();
+      redrawVisibleCanvas();
     });
 
     canvas.addEventListener("mousemove", e => {
       if (dragging) {
         offsetX = e.offsetX - startX;
         offsetY = e.offsetY - startY;
-        drawAll();
+        redrawVisibleCanvas();
       }
     });
 
     canvas.addEventListener("mouseup", () => {
       dragging = false;
       transparency = 1;
-      drawAll();
+      redrawVisibleCanvas();
     });
 
     canvas.addEventListener("wheel", e => {
@@ -156,10 +165,10 @@
       transparency = 0.5;
       scale += e.deltaY < 0 ? 0.05 : -0.05;
       scale = Math.max(0.2, Math.min(scale, 3));
-      drawAll();
+      redrawVisibleCanvas();
       setTimeout(() => {
         transparency = 1;
-        drawAll();
+        redrawVisibleCanvas();
       }, 300);
     });
 
@@ -183,7 +192,7 @@
       if (e.touches.length === 1 && dragging) {
         offsetX = e.touches[0].clientX - rect.left - startX;
         offsetY = e.touches[0].clientY - rect.top - startY;
-        drawAll();
+        redrawVisibleCanvas();
       }
       if (e.touches.length === 2) {
         const newDist = getDistance(e.touches);
@@ -191,14 +200,14 @@
         scale *= zoomFactor;
         scale = Math.max(0.2, Math.min(scale, 3));
         touchDistance = newDist;
-        drawAll();
+        redrawVisibleCanvas();
       }
     }, { passive: false });
 
     canvas.addEventListener("touchend", () => {
       dragging = false;
       transparency = 1;
-      drawAll();
+      redrawVisibleCanvas();
     });
 
     function getDistance(touches) {
@@ -213,17 +222,12 @@
         return;
       }
 
-      transparency = 1;
-      drawAll(true); // tambahkan watermark teks
-      setTimeout(() => {
-        const a = document.createElement("a");
-        a.href = canvas.toDataURL("image/png");
-        a.download = "twibbon-palestine.png";
-        a.click();
-
-        // Gambar ulang tanpa watermark
-        drawAll(false);
-      }, 200);
+      // Buat hasil final di canvas tak terlihat
+      drawAll(hiddenCtx, true);
+      const a = document.createElement("a");
+      a.href = hiddenCanvas.toDataURL("image/png");
+      a.download = "twibbon-palestine.png";
+      a.click();
     });
 
     function showAlert() {
@@ -234,7 +238,7 @@
       }, 2500);
     }
 
-    twibbon.onload = () => drawAll(false);
+    twibbon.onload = () => redrawVisibleCanvas();
   </script>
 </body>
 </html>
